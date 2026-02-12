@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>争锋天下 - 新号开局版</title>
+<style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei", "宋体", sans-serif;}
+    body{background:#E6E6E6;font-size:14px;color:#000;max-width:600px;margin:0 auto;padding:10px;}
+    .header{background:#fff;border:1px solid #666;padding:8px;margin-bottom:10px;border-radius:4px;}
+    .title{text-align:center;font-weight:bold;color:#900;font-size:18px;margin-bottom:5px;}
+    .notice{color:#003399;margin:5px 0;padding:3px;border-bottom:1px solid #DDD;cursor:pointer;}
+    .notice:hover{background:#f5f5f5;}
+    .info{border:1px solid #666;background:#fff;padding:8px;margin:8px 0;line-height:1.8;border-radius:4px;}
+    .menu{border:1px solid #666;background:#fff;padding:5px;margin:8px 0;border-radius:4px;}
+    .item{display:block;padding:8px 5px;color:#003399;text-decoration:none;border-bottom:1px solid #DDD;cursor:pointer;}
+    .item:last-child{border-bottom:none;}
+    .item:hover{background:#f0f8ff;}
+    .page{display:none;padding:5px;}
+    .page.show{display:block;}
+    .chat-item{margin:5px 0;line-height:1.6;padding:3px;background:#f9f9f9;border-radius:3px;}
+    .time{color:#666;font-size:12px;margin-right:5px;}
+    .bold{font-weight:bold;}
+    .blue{color:#003399;}
+    .red{color:#900;}
+    .btn-reset{margin:10px 0;padding:8px 15px;background:#900;color:#fff;border:none;border-radius:4px;cursor:pointer;}
+    .btn-reset:hover{background:#c00;}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="title">争锋天下 - 新号开局版</div>
+    <div class="notice" onclick="alert('官方公告：欢迎新主公！新手福利：首次攻城双倍战功！')">争锋天下公告</div>
+    <div class="notice" onclick="alert('古墓迷城暂未开放，敬请期待！')">古墓迷城</div>
+    <div class="notice" onclick="alert('暂无未读短信，主公可专注霸业！')">您有0条未读短信</div>
+</div>
+
+<!-- 玩家信息 -->
+<div class="info" id="playerInfo">
+</div>
+
+<!-- 诸侯排行 -->
+<div class="info" id="rankBox">
+</div>
+
+<!-- 军情 -->
+<div class="info">
+    <span class="bold red">【军情】</span><br>
+    <span id="military">系统：欢迎来到争锋天下，开始你的霸业！新手提示：先升级主城提升属性！</span>
+</div>
+
+<!-- 千里传音 -->
+<div class="info">
+    <span class="bold blue">【千里传音】</span><br>
+    <div id="chatBox" style="max-height:150px;overflow-y:auto;margin:5px 0;"></div>
+    <div class="item" onclick="sendMsg()">我也有话想说</div>
+</div>
+
+<!-- 重置数据按钮 -->
+<button class="btn-reset" onclick="resetGame()">重置游戏数据</button>
+
+<!-- 菜单 -->
+<div class="menu">
+    <div class="item" onclick="showPage('main')">🏯 主城</div>
+    <div class="item" onclick="showPage('hero')">🏆 点将大帐</div>
+    <div class="item" onclick="showPage('battle')">⚔️ 征战</div>
+    <div class="item" onclick="showPage('rob')">💰 掠夺</div>
+    <div class="item" onclick="showPage('union')">🤝 联盟</div>
+    <div class="item" onclick="showPage('rankPage')">📊 排行</div>
+</div>
+
+<!-- 主城 -->
+<div id="main" class="page show">
+    <div class="info">🏯 主城 - ${player.city || '新手村'}</div>
+    <div class="item" onclick="zhaobing()">📢 征兵（消耗500粮 | 兵力+50）</div>
+    <div class="item" onclick="shengji()">🏰 升级主城（消耗1000银 | 全属性提升）</div>
+    <div class="item" onclick="lingqu()">🎁 领取离线资源（免费 | 粮+500 银+300）</div>
+    <div class="item" onclick="huifu()">❤️ 恢复体力（消耗100银 | 体力回满）</div>
+</div>
+
+<!-- 点将大帐 -->
+<div id="hero" class="page">
+    <div class="info">🏆 点将大帐</div>
+    <div class="item" onclick="zhaomu()">🎯 招募武将（消耗800银 | 解锁偏将）</div>
+    <div class="item" onclick="peiyang()">⚡ 培养武将（消耗500银 | 攻击+150）</div>
+    <div class="item" onclick="alert(`当前武将：${player.hero} | 攻击加成：${player.hero === '偏将' ? '200' : '0'}`)">👨‍✈️ 查看武将</div>
+</div>
+
+<!-- 征战 -->
+<div id="battle" class="page">
+    <div class="info">⚔️ 征战四方</div>
+    <div class="item" onclick="gongcheng()">🏴 攻打小城（消耗30体力 | 解锁小城）</div>
+    <div class="item" onclick="alert('当前可攻：小城 | 下一目标：县城（需等级5）')">🗺️ 攻城列表</div>
+    <div class="item" onclick="alert(`战功+50 | 累计战功：${player.gong}`)">🎖️ 领取征战奖励</div>
+</div>
+
+<!-- 掠夺 -->
+<div id="rob" class="page">
+    <div class="info">💰 掠夺玩家（人机）</div>
+    <div class="item" onclick="zhencha()">🔍 侦查玩家（免费 | 查看目标信息）</div>
+    <div class="item" onclick="duoluo()">🏴‍☠️ 掠夺玩家（消耗20体力 | 抢银两）</div>
+    <div class="item" onclick="alert(`今日掠夺次数：5/5 | 剩余次数：5`)">📝 今日次数</div>
+</div>
+
+<!-- 联盟 -->
+<div id="union" class="page">
+    <div class="info">🤝 联盟</div>
+    <div class="item" onclick="alert('创建联盟需要2000银两 | 联盟等级1可解锁科技')">🏗️ 创建联盟</div>
+    <div class="item" onclick="alert('加入兄弟盟成功！联盟成员：8人 | 每日可领联盟福利')">➕ 加入联盟</div>
+    <div class="item" onclick="alert('联盟科技：资源产量+10% | 攻击+5%（需联盟等级2解锁）')">🔬 联盟科技</div>
+</div>
+
+<!-- 全服排行 -->
+<div id="rankPage" class="page">
+    <div class="info">📊 全服诸侯排行</div>
+    <div id="fullRank" style="max-height:300px;overflow-y:auto;"></div>
+</div>
+
+<script>
+// 20个人机玩家
+let bots = [
+    {name:"乱世枭雄",level:5,atk:1200,def:900,money:8000},
+    {name:"铁血战将",level:4,atk:1000,def:800,money:6000},
+    {name:"烽火诸侯",level:6,atk:1500,def:1100,money:9000},
+    {name:"江山美人",level:3,atk:800,def:700,money:5000},
+    {name:"天下归心",level:7,atk:1800,def:1400,money:12000},
+    {name:"征战四方",level:5,atk:1300,def:1000,money:7500},
+    {name:"王者归来",level:8,atk:2000,def:1600,money:15000},
+    {name:"独孤求败",level:4,atk:950,def:750,money:6500},
+    {name:"横扫千军",level:6,atk:1600,def:1200,money:10000},
+    {name:"万夫莫敌",level:7,atk:1900,def:1500,money:13000},
+    {name:"英雄豪杰",level:3,atk:850,def:720,money:5200},
+    {name:"盖世英雄",level:5,atk:1250,def:950,money:8200},
+    {name:"气吞山河",level:4,atk:1050,def:850,money:6800},
+    {name:"龙啸九天",level:6,atk:1550,def:1150,money:9500},
+    {name:"虎踞龙盘",level:7,atk:1850,def:1450,money:12500},
+    {name:"凤鸣岐山",level:5,atk:1350,def:1050,money:7800},
+    {name:"雄霸天下",level:8,atk:2100,def:1700,money:16000},
+    {name:"逐鹿中原",level:4,atk:1000,def:800,money:6300},
+    {name:"问鼎天下",level:6,atk:1650,def:1250,money:10500},
+    {name:"权倾朝野",level:5,atk:1400,def:1100,money:8500}
+];
+
+// 新号初始数据（优化：增加兵力上限随等级变化）
+let player = JSON.parse(localStorage.getItem("zfxNew")) || {
+    name:"新晋主公",
+    level:1,
+    exp:0,
+    atk:500,
+    def:400,
+    bing:"100/100", // 当前兵力/最大兵力
+    food:2000,
+    money:2000,
+    power:100,
+    city:"新手村",
+    hero:"小兵",
+    gong:0,
+    robTarget:0
+};
+
+// 刷新界面（核心函数）
+function up(){
+    // 计算最大兵力（随等级提升：等级*100）
+    let maxBing = player.level * 100;
+    let currBing = player.bing.split("/")[0] * 1;
+    player.bing = `${Math.min(currBing, maxBing)}/${maxBing}`;
+
+    // 更新玩家信息
+    document.getElementById("playerInfo").innerHTML = 
+`<span class="bold red">${player.name}</span> Lv.${player.level}（主公）<br>
+兵力：<span class="bold">${player.bing}</span>（等级越高，兵力上限越高）<br>
+攻击：<span class="bold">${player.atk}</span>  防御：<span class="bold">${player.def}</span><br>
+粮食：<span class="bold">${player.food}</span>  银两：<span class="bold">${player.money}</span><br>
+体力：<span class="bold ${player.power < 30 ? 'red' : ''}">${player.power}/100</span><br>
+城池：<span class="bold">${player.city}</span> | 累计战功：${player.gong}`;
+
+    // 随机掠夺目标
+    player.robTarget = Math.floor(Math.random()*bots.length);
+    
+    // 排行（按等级降序）
+    let rank = [...bots];
+    rank.push(player);
+    rank.sort((a,b)=>{
+        // 优先按等级，等级相同按攻击
+        if(b.level !== a.level) return b.level - a.level;
+        return b.atk - a.atk;
+    });
+
+    // 前5排行
+    let rankHtml = "";
+    for(let i=0;i<Math.min(5, rank.length);i++){
+        let isSelf = rank[i].name === player.name;
+        rankHtml += `${i+1}. <span class="${isSelf ? 'red bold' : ''}">${rank[i].name}</span> Lv.${rank[i].level}（攻击：${rank[i].atk}）<br>`;
+    }
+    document.getElementById("rankBox").innerHTML = 
+`<span class="bold">🏆 诸侯排行（前5）</span><br>${rankHtml}`;
+    
+    // 全服排行
+    let full = "";
+    rank.forEach((v,i)=>{
+        let isSelf = v.name === player.name;
+        full += `${i+1}. <span class="${isSelf ? 'red bold' : ''}">${v.name}</span> Lv.${v.level} | 攻击：${v.atk} | 银两：${v.money || 0}<br>`;
+    });
+    document.getElementById("fullRank").innerHTML = full;
+    
+    // 保存数据到本地
+    localStorage.setItem("zfxNew",JSON.stringify(player));
+}
+
+// 页面切换
+function showPage(id){
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("show"));
+    document.getElementById(id).classList.add("show");
+    // 切换页面时更新军情提示
+    const tips = {
+        main: "系统：主城是霸业根基，先升级主城提升兵力上限！",
+        hero: "系统：武将是征战核心，招募偏将可大幅提升攻击！",
+        battle: "系统：攻城需消耗体力，体力不足可在主城恢复！",
+        rob: "系统：掠夺前先侦查，优先选择银两多的目标！",
+        union: "系统：加入联盟可获得资源加成，快找个联盟吧！",
+        rankPage: "系统：努力提升等级，登上全服榜首！"
+    };
+    document.getElementById("military").innerHTML = tips[id] || tips.main;
+}
+
+// 功能函数 - 主城
+function zhaobing(){
+    if(player.food>=500){
+        player.food -= 500;
+        let [curr, max] = player.bing.split("/").map(Number);
+        let newCurr = Math.min(curr + 50, max);
+        player.bing = `${newCurr}/${max}`;
+        alert(`✅ 征兵成功！\n兵力+50（当前：${newCurr}/${max}）\n剩余粮食：${player.food}`);
+        up();
+    }else alert("❌ 粮食不足！当前粮食："+player.food+"（需要500）");
+}
+
+function shengji(){
+    if(player.money>=1000){
+        player.money -= 1000;
+        player.level += 1;
+        player.atk += 100;
+        player.def += 80;
+        // 升级后自动提升兵力上限
+        let maxBing = player.level * 100;
+        let currBing = player.bing.split("/")[0] * 1;
+        player.bing = `${currBing}/${maxBing}`;
+        alert(`🎉 主城升级成功！\n等级+1（当前Lv.${player.level}）\n攻击+100，防御+80\n兵力上限提升至${maxBing}`);
+        up();
+    }else alert("❌ 银两不足！当前银两："+player.money+"（需要1000）");
+}
+
+function lingqu(){
+    player.food += 500;
+    player.money += 300;
+    alert(`🎁 领取离线资源成功！\n粮食+500（当前：${player.food}）\n银两+300（当前：${player.money}）`);
+    up();
+}
+
+function huifu(){
+    if(player.money>=100){
+        player.money -= 100;
+        player.power = 100;
+        alert(`❤️ 体力恢复成功！\n体力已回满（100/100）\n剩余银两：${player.money}`);
+        up();
+    }else alert("❌ 银两不足！当前银两："+player.money+"（需要100）");
+}
+
+// 功能函数 - 点将大帐
+function zhaomu(){
+    if(player.money>=800){
+        player.money -= 800;
+        player.hero = "偏将";
+        player.atk += 200;
+        alert(`🎯 招募武将成功！\n解锁武将：偏将\n攻击+200（当前：${player.atk}）\n剩余银两：${player.money}`);
+        up();
+    }else alert("❌ 银两不足！当前银两："+player.money+"（需要800）");
+}
+
+function peiyang(){
+    if(player.money>=500){
+        player.money -= 500;
+        player.atk += 150;
+        alert(`⚡ 培养武将成功！\n攻击+150（当前：${player.atk}）\n剩余银两：${player.money}`);
+        up();
+    }else alert("❌ 银两不足！当前银两："+player.money+"（需要500）");
+}
+
+// 功能函数 - 征战
+function gongcheng(){
+    if(player.power>=30){
+        player.power -= 30;
+        player.gong += 100; // 新手福利：双倍战功
+        player.city = "小城";
+        alert(`🏴 攻打小城成功！\n解锁城池：小城\n战功+100（新手双倍）\n剩余体力：${player.power}`);
+        up();
+    }else alert("❌ 体力不足！当前体力："+player.power+"（需要30）");
+}
+
+// 功能函数 - 掠夺
+function zhencha(){
+    let b = bots[player.robTarget];
+    let bing = b.level * 100;
+    alert(`🔍 侦查结果：\n目标名称：${b.name}\n等级：Lv.${b.level}\n攻击：${b.atk} | 防御：${b.def}\n银两：${b.money} | 兵力：${bing}`);
+}
+
+function duoluo(){
+    if(player.power>=20){
+        player.power -= 20;
+        let b = bots[player.robTarget];
+        let get = Math.floor(b.money * 0.3);
+        player.money += get;
+        player.gong += 10;
+        document.getElementById("military").innerHTML = `📢 军情：你掠夺了<span class="red">${b.name}</span>，成功获得${get}银两！`;
+        alert(`🏴‍☠️ 掠夺成功！\n目标：${b.name}\n获得银两：${get}（30%）\n战功+10\n剩余体力：${player.power}`);
+        up();
+    }else alert("❌ 体力不足！当前体力："+player.power+"（需要20）");
+}
+
+// 功能函数 - 聊天
+function sendMsg(){
+    let msg = prompt("📝 请输入你要发送的内容（最多20字）：");
+    if(msg && msg.trim() && msg.length <= 20){
+        let time = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
+        document.getElementById("chatBox").innerHTML += 
+`<div class="chat-item"><span class="time">[${time}]</span>-<span class="blue bold">${player.name}</span>：${msg.trim()}</div>`;
+        // 滚动到最新消息
+        let chatBox = document.getElementById("chatBox");
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }else if(msg){
+        alert("❌ 输入内容不能为空或超过20字！");
+    }
+}
+
+// 重置游戏数据
+function resetGame(){
+    if(confirm("⚠️ 确定要重置所有游戏数据吗？此操作不可恢复！")){
+        localStorage.removeItem("zfxNew");
+        alert("✅ 数据重置成功！页面将刷新...");
+        window.location.reload();
+    }
+}
+
+// 启动游戏
+up();
+
+// 页面加载完成后提示
+window.onload = function(){
+    setTimeout(()=>{
+        alert("🎮 游戏加载完成！\n新手攻略：\n1. 先领取离线资源获得初始银两\n2. 升级主城提升兵力和属性\n3. 招募武将增强战斗力\n4. 攻城/掠夺获取更多资源");
+    }, 1000);
+};
+</script>
+</body>
+</html>
